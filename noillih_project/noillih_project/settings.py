@@ -230,6 +230,7 @@ JAZZMIN_SETTINGS = {
     # Whether to show the UI customizer on the sidebar
     "show_ui_builder": False,
 
+
     ###############
     # Change view #
     ###############
@@ -246,5 +247,11 @@ JAZZMIN_SETTINGS = {
     "language_chooser": False,
 }
 
+JAZZMIN_UI_TWEAKS = {
+
+    "navbar_fixed": True,
+    "sidebar_fixed": True,
+    
+}
 
 IMPORT_EXPORT_IMPORT_PERMISSION_CODE = 'add'

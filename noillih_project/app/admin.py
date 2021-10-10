@@ -21,7 +21,6 @@ class FactureForm(forms.ModelForm):
 
 
 
-
 class ProjetResource(resources.ModelResource):
 	class Meta:
 		model = Projet
@@ -33,8 +32,8 @@ class ServiceInline(NestedTabularInline):
 class ProjetAdmin(NestedModelAdmin,ImportExportModelAdmin):
 	model = Projet
 	list_display  = [field.name for field in model._meta.fields if field.name != "id"]
-	list_filter   = [field.name for field in model._meta.fields if field.name != "id"]
-	search_fields = [field.name for field in model._meta.fields if field.name != "id"]
+	list_filter   = ["entreprise"]
+	search_fields = ["nom"]
 
 	resource_class = ProjetResource
 	inlines = [ServiceInline,]
@@ -54,10 +53,17 @@ class EntrepriseResource(resources.ModelResource):
 	class Meta:
 		model = Entreprise
 
+class ProjetInline(NestedTabularInline):
+	model = Projet
+	extra = 0
+
+
 class EntrepriseAdmin(NestedModelAdmin,ImportExportModelAdmin):
 	model = Entreprise
 	list_display = ["entreprise_","nom_commercial","numero_de_telephone","adresse_email"]
 	search_fields = ["nom_commercial"]
+
+	inlines = [ProjetInline,]
 
 	resource_class = EntrepriseResource
 
@@ -66,7 +72,7 @@ class EntrepriseAdmin(NestedModelAdmin,ImportExportModelAdmin):
 			link = obj.logo.url
 			html = '<img src="{}" width="30" height="30" style="border-radius:10px;"/>'.format(link)
 		except:
-			html = '<i class="fas fa-building"></i>'
+			html = '<i style="font-size: 30px;" class="fas fa-building"></i>'
 
 		return format_html(html)
 
@@ -139,4 +145,22 @@ admin.site.register(Facture, FactureAdmin)
 
 
 
-admin.site.register(Service)
+class ServiceResource(resources.ModelResource):
+	class Meta:
+		model = Service
+
+class ServiceAdmin(NestedModelAdmin,ImportExportModelAdmin):
+	model = Service
+	list_display  = [field.name for field in model._meta.fields if field.name != "id"]
+	list_filter   = [field.name for field in model._meta.fields if field.name != "id"]
+	search_fields = [field.name for field in model._meta.fields if field.name != "id"]
+
+	resource_class = ServiceResource
+
+	def get_queryset(self, request):
+		qs = super(ServiceAdmin, self).get_queryset(request)
+		if request.user.is_superuser:
+			return qs
+		return qs.filter(projet__entreprise__collaborateur__id=request.user.id)
+
+admin.site.register(Service, ServiceAdmin)
